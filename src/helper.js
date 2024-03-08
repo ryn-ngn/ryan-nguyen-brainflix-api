@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path')
 const PORT = process.env.PORT || 8080;
 // BASE_URL was necessary in my environment because Express app being served from another computer, not localhost
-const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`
+const BASE_URL = process.env.BASE_URL || `http://localhost:`
 
 
 const getAllVideosWithoutComments = () => {
@@ -16,8 +16,9 @@ const getAllVideosWithoutComments = () => {
 
 const getVideoInfo = (id) => {
     const matchingVideo = videosData.find(video => video.id === id)
-    matchingVideo.image = `${BASE_URL}:${PORT}${matchingVideo.image}`
-    return matchingVideo;
+    const matchingVideoCopy = JSON.parse(JSON.stringify(matchingVideo))
+    matchingVideoCopy.image = `${BASE_URL}:${PORT}${matchingVideo.image}`
+    return matchingVideoCopy;
 }
 
 const uploadVideo = (videoData) => {
