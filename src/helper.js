@@ -1,32 +1,36 @@
 const { v4: uuid } = require('uuid');
-let { videosData } = require('../data/videos.json')
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path')
 const PORT = process.env.PORT || 8080;
-// BASE_URL was necessary in my environment because Express app being served from another computer, not localhost
 const BASE_URL = process.env.BASE_URL || `http://localhost:`
+const filePath = path.join(__dirname, '../data/videos.json')
+let videosData;
 
+// read videos data from JSON file
+fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+        console.error('Unable to read file:', err);
+        return;
+    }
 
-const getAllVideosWithoutComments = () => {
-    const allVideosWithoutComments = videosData.map(({ id, title, channel, image }) => ({ id, title, channel, image: `${BASE_URL}:${PORT}${image}` }));
+    try {
+        videosData = JSON.parse(data);
+    } catch (error) {
+        console.error('Error parsing JSON data:', error);
+    }
+});
 
-    return allVideosWithoutComments;
-}
+const getAllVideosWithoutComments = () => videosData.map(({ id, title, channel, image }) => ({ id, title, channel, image }));;
 
-const getVideoInfo = (id) => {
-    const matchingVideo = videosData.find(video => video.id === id)
-    const matchingVideoCopy = JSON.parse(JSON.stringify(matchingVideo))
-    matchingVideoCopy.image = `${BASE_URL}:${PORT}${matchingVideo.image}`
-    return matchingVideoCopy;
-}
+const getVideoInfo = (id) => videosData.find(video => video.id === id)
 
 const uploadVideo = (videoData) => {
     const newVideo = {
         "id": uuid(),
         "title": videoData.title,
         "channel": "Golden Rooster",
-        "image": `/Upload-video-preview.jpg`,
+        "image": `http://localhost:8080/Upload-video-preview.jpg`,
         "description": videoData.description,
         "views": 0,
         "likes": 0,
@@ -38,7 +42,7 @@ const uploadVideo = (videoData) => {
 
     videosData.push(newVideo)
     const jsonVideosData = JSON.stringify({ "videosData": videosData }, null, 2)
-    const filePath = path.join(__dirname, '../data/videos.json')
+
     fs.writeFile(filePath, jsonVideosData, (err) => {
         if (err) {
             console.error('Error writing to file:', err);
